@@ -40,3 +40,18 @@ data_1985$RetroNuclearPlants <- data_1985$c168
 
 freq(data_1985$RetroNuclearPlants)
 
+#C) Control variables
+
+# Gender
+
+data_1985$Women <- ifelse(data_1985$sexe == 2, 1, 0)
+
+freq(data_1985$Women)
+
+# Age in 9 brackets 
+
+data_1985$Age <- data_1985$age9
+
+freq(data_1985$Age)
+
+
