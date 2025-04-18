@@ -136,6 +136,10 @@ data_1985 <- data_1985 %>%
 
 freq(data_1985$FinancialAssets)
 
+#D) Departements
+
+freq(data_1985$departement) 
+
 #III) Regression Analysis
 
 ols <- lm(NuclearPlants ~ Women + as.factor(Age) + Diploma + Income + Occupation + HomeOwnership + Savings + FinancialAssets, data = data_1985)
