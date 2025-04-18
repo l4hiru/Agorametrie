@@ -63,9 +63,86 @@ data_1985 <- data_1985 %>%
       diplome %in% c(3, 4) ~ "Medium",  # CAP, Brevet
       diplome %in% c(5, 6) ~ "High"     # Bac, diplôme sup.
     ),
-    Diploma = factor(Diploma, levels = c("Low", "Medium", "High"), ordered = TRUE)
+    Diploma = factor(Diploma, levels = c("Low", "Medium", "High"))
   )
 
 freq(data_1985$Diploma)
 
+# Occupation
 
+data_1985 <- data_1985 %>%
+  mutate(
+    Occupation = case_when(
+      prof_8 == 1 ~ "Farmer",
+      prof_8 == 2 ~ "Craftman",
+      prof_8 == 3 ~ "Executive",
+      prof_8 == 4 ~ "PI",
+      prof_8 == 5 ~ "Employee",
+      prof_8 == 6 ~ "Worker",
+      prof_8 == 7 ~ "Pensioner",
+      prof_8 == 8 ~ "Other"
+    ),
+    Occupation = factor(Occupation),
+    Occupation = relevel(Occupation, ref = "Worker")
+  )
+
+freq(data_1985$Occupation)
+
+# Income Brackets
+
+freq(data_1985$revenu9)
+
+data_1985 <- data_1985 %>%
+  mutate(
+    Income = case_when(
+      revenu9 == 1 ~ "< 4000F",
+      revenu9 == 2 ~ "4000 - 5000F",
+      revenu9 == 3 ~ "5000 - 6000F",
+      revenu9 == 4 ~ "6000 - 7000F",
+      revenu9 == 5 ~ "7000 - 8000F",
+      revenu9 == 6 ~ "8000 - 10k F",
+      revenu9 == 7 ~ "10k - 15k F",
+      revenu9 == 8 ~ "> 15k F",
+      revenu9 == 999 ~ NA_character_
+    ),
+    Income = factor(Income, levels = c(
+      "< 4000F", "4000 - 5000F", "5000 - 6000F", "6000 - 7000F",
+      "7000 - 8000F", "8000 - 10k F", "10k - 15k F", "> 15k F"
+    ))
+  )
+
+freq(data_1985$Income) # Warning : 20% N.A
+
+# Assets 
+
+data_1985 <- data_1985 %>%
+  mutate(
+    HomeOwnership = ifelse(proprio13 == 888, NA, ifelse(proprio13 == 2, 1, 0))
+  )
+
+freq(data_1985$HomeOwnership)
+
+data_1985 <- data_1985 %>%
+  mutate(
+    Savings = ifelse(proprio22 == 888, NA, ifelse(proprio22 == 2, 1, 0))
+  )
+
+freq(data_1985$Savings)
+
+data_1985 <- data_1985 %>%
+  mutate(
+    FinancialAssets = ifelse(proprio1 == 888, NA, ifelse(proprio1 == 2, 1, 0))
+  )
+
+freq(data_1985$FinancialAssets)
+
+#III) Regression Analysis
+
+ols <- lm(NuclearPlants ~ Women + Age + Diploma + Income + Occupation + HomeOwnership + Savings + FinancialAssets, data = data_1985)
+ols2 <- lm(RetroNuclearPlants ~ Women + Age + Diploma + Income + Occupation + HomeOwnership + Savings + FinancialAssets, data = data_1985)
+
+stargazer(ols,
+  type = "text",
+  se = list(sqrt(diag(vcovHC(ols, type = "HC1")))),
+  title = "Heteroskedasticity-Robust OLS Regression",
+  digits = 3)
