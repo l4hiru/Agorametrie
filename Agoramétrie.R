@@ -138,11 +138,17 @@ freq(data_1985$FinancialAssets)
 
 #III) Regression Analysis
 
-ols <- lm(NuclearPlants ~ Women + Age + Diploma + Income + Occupation + HomeOwnership + Savings + FinancialAssets, data = data_1985)
-ols2 <- lm(RetroNuclearPlants ~ Women + Age + Diploma + Income + Occupation + HomeOwnership + Savings + FinancialAssets, data = data_1985)
+ols <- lm(NuclearPlants ~ Women + as.factor(Age) + Diploma + Income + Occupation + HomeOwnership + Savings + FinancialAssets, data = data_1985)
+ols2 <- lm(RetroNuclearPlants ~ Women + as.factor(Age) + Diploma + Income + Occupation + HomeOwnership + Savings + FinancialAssets, data = data_1985)
 
 stargazer(ols,
   type = "text",
   se = list(sqrt(diag(vcovHC(ols, type = "HC1")))),
+  title = "Heteroskedasticity-Robust OLS Regression",
+  digits = 3)
+
+stargazer(ols2,
+  type = "text",
+  se = list(sqrt(diag(vcovHC(ols2, type = "HC1")))),
   title = "Heteroskedasticity-Robust OLS Regression",
   digits = 3)
