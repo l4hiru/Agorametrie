@@ -54,4 +54,18 @@ data_1985$Age <- data_1985$age9
 
 freq(data_1985$Age)
 
+# Diploma
+
+data_1985 <- data_1985 %>%
+  mutate(
+    Diploma = case_when(
+      diplome %in% c(1, 2) ~ "Low",     # Aucun, CEP
+      diplome %in% c(3, 4) ~ "Medium",  # CAP, Brevet
+      diplome %in% c(5, 6) ~ "High"     # Bac, diplôme sup.
+    ),
+    Diploma = factor(Diploma, levels = c("Low", "Medium", "High"), ordered = TRUE)
+  )
+
+freq(data_1985$Diploma)
+
 
