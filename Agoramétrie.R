@@ -30,21 +30,33 @@ data_1986 <- read_sas("Structures de l'opinion (1977 - 1991)/1986/fr.cdsp.ddi.ag
 
 #II) Variables 
 
-#A) Construct more nuclear plants ? 
+#A) Outcome variables
+
+# Construct more nuclear plants ? 
 
 data_1985$NuclearPlants <- data_1985$c4
 data_1986$NuclearPlants <- data_1986$c4
 
 freq(data_1986$NuclearPlants)
 
-#B) Building nuclear power plants was a good thing ? (Retrospective appreciation)
+# Building nuclear power plants was a good thing ? (Retrospective appreciation)
 
 data_1985$RetroNuclearPlants <- data_1985$c168
 data_1986$RetroNuclearPlants <- data_1986$c168
 
 freq(data_1986$RetroNuclearPlants)
 
-#C) Control variables
+# Nuclear experts are very serious people
+
+data_1985$NuclearExpertise <- data_1985$n19
+
+data_1986 <- data_1986 %>%
+  mutate(NuclearExpertise = ifelse(data_1986$n19 == 9, NA, data_1986$n19))
+
+freq(data_1986$NuclearExpertise)
+
+
+#B) Control variables
 
 # Gender
 
@@ -204,7 +216,7 @@ data_1986 <- data_1986 %>%
 
 freq(data_1986$FinancialAssets)
 
-#D) Departements
+#C) Departement variable
 
 freq(data_1985$departement) 
 freq(data_1986$departement) 
