@@ -221,6 +221,26 @@ freq(data_1986$FinancialAssets)
 freq(data_1985$departement) 
 freq(data_1986$departement) 
 
+data_1985$code_dep <- gsub("·", "", data_1985$departement)  # Remove separators
+data_1985$code_dep <- ifelse(nchar(data_1985$departement) == 1, 
+                               paste0("0", data_1985$departement), 
+                               data_1985$departement)
+
+data_1986$code_dep <- gsub("·", "", data_1986$departement)  # Remove separators
+data_1986$code_dep <- ifelse(nchar(data_1986$departement) == 1, 
+                               paste0("0", data_1986$departement), 
+                               data_1986$departement)
+
+
+data_1985 <- data_1985 %>%
+  dplyr::select(NuclearPlants:code_dep) %>%
+  mutate(Year = as.factor(1985))
+
+data_1986 <- data_1986 %>%
+  dplyr::select(NuclearPlants:code_dep) %>%
+  mutate(Year = as.factor(1986))
+
+data_panel <- bind_rows(data_1985, data_1986)
 
 #III) Regression Analysis
 
