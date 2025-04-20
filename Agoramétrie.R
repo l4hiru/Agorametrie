@@ -26,6 +26,7 @@ library(ltm)
 
 data_1985 <- read_sas("Structures de l'opinion (1977 - 1991)/1985/fr.cdsp.ddi.agora1985.sas7bdat")
 data_1986 <- read_sas("Structures de l'opinion (1977 - 1991)/1986/fr.cdsp.ddi.agora1986.sas7bdat")
+exposure <- read_delim("Cesium 137 et Iode 131 data (IPSN).csv", delim = ";")
 
 
 #II) Variables 
@@ -231,6 +232,11 @@ data_1986$code_dep <- ifelse(nchar(data_1986$departement) == 1,
                                paste0("0", data_1986$departement), 
                                data_1986$departement)
 
+exposure$code_dep <- gsub("·", "", exposure$code_dep)  # Remove separators
+exposure$code_dep <- ifelse(nchar(exposure$code_dep) == 1, 
+                               paste0("0", exposure$code_dep), 
+                               exposure$code_dep)
+
 
 data_1985 <- data_1985 %>%
   dplyr::select(NuclearPlants:code_dep) %>%
@@ -241,6 +247,15 @@ data_1986 <- data_1986 %>%
   mutate(Year = as.factor(1986))
 
 data_panel <- bind_rows(data_1985, data_1986)
+
+data_panel <- data_panel %>%
+  left_join(
+    exposure %>% dplyr::select(code_dep, departement, `Cesium 137`, `Iode 131`),
+    by = "code_dep"
+  )
+
+data_panel <- data_panel %>%
+  mutate(Post = ifelse(Year == 1986, 1, 0))
 
 #III) Regression Analysis
 
@@ -258,3 +273,9 @@ stargazer(ols2,
   se = list(sqrt(diag(vcovHC(ols2, type = "HC1")))),
   title = "Heteroskedasticity-Robust OLS Regression",
   digits = 3)
+
+data_panel$CesiumZone <- gsub("·", "", data_panel$`Cesium 137`)       # remove dots
+data_panel$CesiumZone <- trimws(data_panel$CesiumZone)                # remove extra spaces
+data_panel$CesiumZone <- factor(data_panel$CesiumZone, levels = c("Zone 1", "Zone 2", "Zone 3", "Zone 4"))
+
+freq(data_panel$CesiumZone)
