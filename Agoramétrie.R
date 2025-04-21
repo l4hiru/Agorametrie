@@ -304,7 +304,10 @@ data_panel$CesiumZone <- trimws(data_panel$CesiumZone)                # remove e
 data_panel$CesiumZone <- factor(data_panel$CesiumZone, levels = c("Zone 1", "Zone 2", "Zone 3", "Zone 4"))
 
 freq(data_panel$CesiumZone)
+<<<<<<< HEAD
 
 ols_panel <- lm(NuclearPlants ~ CesiumZone * Post + Post + code_dep, data = data_panel)
 
 stargazer(ols_panel, type = "text")
+=======
+>>>>>>> 12a91b929f0d7b708183af200a4f20d5eb81b592
