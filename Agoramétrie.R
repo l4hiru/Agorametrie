@@ -21,11 +21,13 @@ library(factoextra)
 library(flexmix)
 library(psych)
 library(ltm)
+library(scales)
 
 #I) Datasets 
 
 data_1985 <- read_sas("Structures de l'opinion (1977 - 1991)/1985/fr.cdsp.ddi.agora1985.sas7bdat")
 data_1986 <- read_sas("Structures de l'opinion (1977 - 1991)/1986/fr.cdsp.ddi.agora1986.sas7bdat")
+exposure <- read_delim("Cesium 137 et Iode 131 data (IPSN).csv", delim = ";")
 
 
 #II) Variables 
@@ -55,6 +57,30 @@ data_1986 <- data_1986 %>%
 
 freq(data_1986$NuclearExpertise)
 
+# Nuclear Support Index (PCA)
+
+# 1985
+
+cor(data_1985$NuclearPlants, data_1985$RetroNuclearPlants, use = "complete.obs") # 0,64
+cor(data_1985$NuclearPlants, data_1985$NuclearExpertise, use = "complete.obs")   # 0,29
+cor(data_1985$NuclearExpertise, data_1985$RetroNuclearPlants, use = "complete.obs") # 0,34
+
+cronbach_1985 <- data_1985 %>%
+  dplyr::select(NuclearPlants, RetroNuclearPlants, NuclearExpertise)
+
+cronbach.alpha(cronbach_1985, CI = TRUE, na.rm = TRUE) #0.7
+
+normalization_1985 <- scale(cronbach_1985)
+head(normalization_1985)
+
+PCA_1985 <- princomp(normalization_1985)
+summary(PCA_1985) # 1st component : 62% of total data variance
+
+data_1985$NuclearSupportIndex <- PCA_1985$scores 
+
+data_1985$NuclearSupportIndex <- rescale(data_1985$NuclearSupportIndex, to = c(0, 1))
+
+freq(cronbach_1985$NuclearSupportIndex2)
 
 #B) Control variables
 
@@ -231,6 +257,11 @@ data_1986$code_dep <- ifelse(nchar(data_1986$departement) == 1,
                                paste0("0", data_1986$departement), 
                                data_1986$departement)
 
+exposure$code_dep <- gsub("·", "", exposure$code_dep)  # Remove separators
+exposure$code_dep <- ifelse(nchar(exposure$code_dep) == 1, 
+                               paste0("0", exposure$code_dep), 
+                               exposure$code_dep)
+
 
 data_1985 <- data_1985 %>%
   dplyr::select(NuclearPlants:code_dep) %>%
@@ -241,6 +272,15 @@ data_1986 <- data_1986 %>%
   mutate(Year = as.factor(1986))
 
 data_panel <- bind_rows(data_1985, data_1986)
+
+data_panel <- data_panel %>%
+  left_join(
+    exposure %>% dplyr::select(code_dep, departement, `Cesium 137`, `Iode 131`),
+    by = "code_dep"
+  )
+
+data_panel <- data_panel %>%
+  mutate(Post = ifelse(Year == 1986, 1, 0))
 
 #III) Regression Analysis
 
@@ -258,3 +298,13 @@ stargazer(ols2,
   se = list(sqrt(diag(vcovHC(ols2, type = "HC1")))),
   title = "Heteroskedasticity-Robust OLS Regression",
   digits = 3)
+
+data_panel$CesiumZone <- gsub("·", "", data_panel$`Cesium 137`)       # remove dots
+data_panel$CesiumZone <- trimws(data_panel$CesiumZone)                # remove extra spaces
+data_panel$CesiumZone <- factor(data_panel$CesiumZone, levels = c("Zone 1", "Zone 2", "Zone 3", "Zone 4"))
+
+freq(data_panel$CesiumZone)
+
+ols_panel <- lm(NuclearPlants ~ CesiumZone * Post + Post + code_dep, data = data_panel)
+
+stargazer(ols_panel, type = "text")
