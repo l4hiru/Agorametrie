@@ -91,7 +91,7 @@ head(normalization_1985)
 
 PCA_1985 <- princomp(normalization_1985)
 PCA_1985$loadings[, 1:2]
-summary(PCA_1985) # 1st component : 62% of total data variance
+summary(PCA_1985) # 1st component : 35% of total data variance
 
 fviz_pca_var(PCA_1985, col.var = "black")
 
@@ -103,7 +103,7 @@ mean(data_1985$NuclearSupportIndex)
 # 1986
 
 cronbach_1986 <- data_1986 %>%
-  dplyr::select(NuclearPlants, RetroNuclearPlants, NuclearExpertise)
+  dplyr::select(NuclearPlants, RetroNuclearPlants, NuclearExpertise, NuclearWaste, NuclearWasteLocation, NuclearWasteSafety)
 
 cronbach.alpha(cronbach_1986, CI = TRUE, na.rm = TRUE) #0.71
 
@@ -111,15 +111,18 @@ normalization_1986 <- scale(cronbach_1986)
 head(normalization_1986)
 
 PCA_1986 <- princomp(na.omit(normalization_1986))
-summary(PCA_1986) # 1st component : 63% of total data variance
+PCA_1986$loadings[, 1:2]
+summary(PCA_1986) # 1st component : 42% of total data variance
+
+fviz_pca_var(PCA_1986, col.var = "black")
 
 rows_used85 <- complete.cases(normalization_1986)
 data_1986$NuclearSupportIndex <- NA
 data_1986$NuclearSupportIndex[rows_used85] <- PCA_1986$scores[, 1]  # first component
 
-freq(data_1986$NuclearSupportIndex)
-
 data_1986$NuclearSupportIndex <- rescale(data_1986$NuclearSupportIndex, to = c(0, 1))
+
+mean(data_1986$NuclearSupportIndex, na.rm = TRUE)
 
 rm(cronbach_1985, cronbach_1986, normalization_1985, normalization_1986, rows_used85)
 
