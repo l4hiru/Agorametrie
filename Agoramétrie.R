@@ -39,16 +39,12 @@ exposure <- read_delim("Cesium 137 et Iode 131 data (IPSN).csv", delim = ";")
 data_1985$NuclearPlants <- data_1985$c4
 data_1986$NuclearPlants <- data_1986$c4
 
-freq(data_1986$NuclearPlants)
-
 # Building nuclear power plants was a good thing ? (Retrospective appreciation)
 
 data_1985$RetroNuclearPlants <- data_1985$c168
 data_1986$RetroNuclearPlants <- data_1986$c168
 
-freq(data_1986$RetroNuclearPlants)
-
-# Nuclear experts are very serious people
+# Nuclear experts are very serious people ?
 
 data_1985$NuclearExpertise <- data_1985$n19
 
@@ -56,6 +52,18 @@ data_1986 <- data_1986 %>%
   mutate(NuclearExpertise = ifelse(data_1986$n19 == 9, NA, data_1986$n19))
 
 freq(data_1986$NuclearExpertise)
+
+# Nuclear waste is a serious problem ?
+
+data_1985$NuclearWaste <- data_1985$n3
+
+# Finding a site in France for radioactive waste ?
+
+data_1985$NuclearWasteLocation <- data_1985$n35
+
+# Radioactive waste can be safely stored ?
+
+data_1985$NuclearWasteSafety <- data_1985$n39
 
 # Nuclear Support Index (PCA)
 
