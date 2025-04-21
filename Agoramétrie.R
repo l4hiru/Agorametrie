@@ -80,7 +80,7 @@ data_1985$NuclearSupportIndex <- PCA_1985$scores
 
 data_1985$NuclearSupportIndex <- rescale(data_1985$NuclearSupportIndex, to = c(0, 1))
 
-freq(cronbach_1985$NuclearSupportIndex)
+freq(data_1985$NuclearSupportIndex)
 
 # 1986
 
@@ -95,13 +95,15 @@ head(normalization_1986)
 PCA_1986 <- princomp(na.omit(normalization_1986))
 summary(PCA_1986) # 1st component : 63% of total data variance
 
-rows_used <- complete.cases(normalization_1986)
+rows_used85 <- complete.cases(normalization_1986)
 data_1986$NuclearSupportIndex <- NA
-data_1986$NuclearSupportIndex[rows_used] <- PCA_1986$scores[, 1]  # first component
+data_1986$NuclearSupportIndex[rows_used85] <- PCA_1986$scores[, 1]  # first component
 
 freq(data_1986$NuclearSupportIndex)
 
 data_1986$NuclearSupportIndex <- rescale(data_1986$NuclearSupportIndex, to = c(0, 1))
+
+rm(cronbach_1985, cronbach_1986, normalization_1985, normalization_1986, rows_used85)
 
 #B) Control variables
 
@@ -300,13 +302,20 @@ data_panel <- data_panel %>%
     by = "code_dep"
   )
 
+data_panel$Cesium <- data_panel$`Cesium 137`
+data_panel$Iodine <- data_panel$`Iode 131`
+
 data_panel <- data_panel %>%
   mutate(Post = ifelse(Year == 1986, 1, 0))
+
+freq(data_panel$Cesium)
 
 #III) Regression Analysis
 
 ols <- lm(NuclearPlants ~ Women + as.factor(Age) + Diploma + Income + Occupation + HomeOwnership + Savings + FinancialAssets, data = data_1985)
 ols2 <- lm(RetroNuclearPlants ~ Women + as.factor(Age) + Diploma + Income + Occupation + HomeOwnership + Savings + FinancialAssets, data = data_1985)
+
+ols3 <- lm(NuclearSupportIndex ~ Iodine, data = data_panel, subset = Year == 1986)
 
 stargazer(ols,
   type = "text",
@@ -319,6 +328,14 @@ stargazer(ols2,
   se = list(sqrt(diag(vcovHC(ols2, type = "HC1")))),
   title = "Heteroskedasticity-Robust OLS Regression",
   digits = 3)
+
+stargazer(ols3,
+  type = "text",
+  se = list(sqrt(diag(vcovHC(ols3, type = "HC1")))),
+  title = "Heteroskedasticity-Robust OLS Regression",
+  digits = 3)
+
+summary(ols3)
 
 data_panel$CesiumZone <- gsub("·", "", data_panel$`Cesium 137`)       # remove dots
 data_panel$CesiumZone <- trimws(data_panel$CesiumZone)                # remove extra spaces
