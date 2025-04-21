@@ -47,23 +47,31 @@ data_1986$RetroNuclearPlants <- data_1986$c168
 # Nuclear experts are very serious people ?
 
 data_1985$NuclearExpertise <- data_1985$n19
-
 data_1986 <- data_1986 %>%
   mutate(NuclearExpertise = ifelse(data_1986$n19 == 9, NA, data_1986$n19))
 
-freq(data_1986$NuclearExpertise)
 
 # Nuclear waste is a serious problem ?
 
 data_1985$NuclearWaste <- data_1985$n3
+data_1986 <- data_1986 %>%
+  mutate(NuclearWaste = ifelse(data_1986$n3 == 9, NA, data_1986$n3))
+
+freq(data_1986$NuclearWaste)
 
 # Finding a site in France for radioactive waste ?
 
 data_1985$NuclearWasteLocation <- data_1985$n35
+data_1986 <- data_1986 %>%
+  mutate(NuclearWasteLocation = ifelse(data_1986$n35 == 9, NA, data_1986$n35))
+
+freq(data_1986$NuclearWasteLocation)
 
 # Radioactive waste can be safely stored ?
 
 data_1985$NuclearWasteSafety <- data_1985$n39
+data_1986 <- data_1986 %>%
+  mutate(NuclearWasteSafety = ifelse(data_1986$n39 == 9, NA, data_1986$n39))
 
 # Nuclear Support Index (PCA)
 
@@ -74,7 +82,7 @@ cor(data_1985$NuclearPlants, data_1985$NuclearExpertise, use = "complete.obs")  
 cor(data_1985$NuclearExpertise, data_1985$RetroNuclearPlants, use = "complete.obs") # 0,34
 
 cronbach_1985 <- data_1985 %>%
-  dplyr::select(NuclearPlants, RetroNuclearPlants, NuclearExpertise)
+  dplyr::select(NuclearPlants, RetroNuclearPlants, NuclearExpertise, NuclearWaste, NuclearWasteLocation, NuclearWasteSafety)
 
 cronbach.alpha(cronbach_1985, CI = TRUE, na.rm = TRUE) #0.7
 
@@ -82,13 +90,15 @@ normalization_1985 <- scale(cronbach_1985)
 head(normalization_1985)
 
 PCA_1985 <- princomp(normalization_1985)
+PCA_1985$loadings[, 1:2]
 summary(PCA_1985) # 1st component : 62% of total data variance
 
-data_1985$NuclearSupportIndex <- PCA_1985$scores 
+fviz_pca_var(PCA_1985, col.var = "black")
 
+data_1985$NuclearSupportIndex <- PCA_1985$scores 
 data_1985$NuclearSupportIndex <- rescale(data_1985$NuclearSupportIndex, to = c(0, 1))
 
-freq(data_1985$NuclearSupportIndex)
+mean(data_1985$NuclearSupportIndex)
 
 # 1986
 
