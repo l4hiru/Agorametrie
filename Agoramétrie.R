@@ -27,6 +27,8 @@ library(scales)
 
 data_1985 <- read_sas("Structures de l'opinion (1977 - 1991)/1985/fr.cdsp.ddi.agora1985.sas7bdat")
 data_1986 <- read_sas("Structures de l'opinion (1977 - 1991)/1986/fr.cdsp.ddi.agora1986.sas7bdat")
+data_1987 <- read_sas("Structures de l'opinion (1977 - 1991)/1987/fr.cdsp.ddi.agora1987.sas7bdat")
+
 exposure <- read_delim("Cesium 137 et Iode 131 data (IPSN).csv", delim = ";")
 
 
@@ -38,17 +40,27 @@ exposure <- read_delim("Cesium 137 et Iode 131 data (IPSN).csv", delim = ";")
 
 data_1985$NuclearPlants <- data_1985$c4
 data_1986$NuclearPlants <- data_1986$c4
+data_1987 <- data_1987 %>%
+  mutate(NuclearPlants = ifelse(data_1987$c4 == 5.31017013119972e-315, NA, data_1987$c4))
 
 # Building nuclear power plants was a good thing ? (Retrospective appreciation)
 
 data_1985$RetroNuclearPlants <- data_1985$c168
 data_1986$RetroNuclearPlants <- data_1986$c168
 
+data_1987 <- data_1987 %>%
+  mutate(RetroNuclearPlants = ifelse(data_1987$c168 == 5.31017013119972e-315, NA, data_1987$c168))
+
 # Nuclear experts are very serious people ?
 
 data_1985$NuclearExpertise <- data_1985$n19
 data_1986 <- data_1986 %>%
   mutate(NuclearExpertise = ifelse(data_1986$n19 == 9, NA, data_1986$n19))
+
+data_1987 <- data_1987 %>%
+  mutate(NuclearExpertise = ifelse(n19 %in% c(9, 5.31017013119972e-315), NA, n19))
+
+freq(data_1987$NuclearExpertise)
 
 
 # Nuclear waste is a serious problem ?
@@ -57,7 +69,10 @@ data_1985$NuclearWaste <- data_1985$n3
 data_1986 <- data_1986 %>%
   mutate(NuclearWaste = ifelse(data_1986$n3 == 9, NA, data_1986$n3))
 
-freq(data_1986$NuclearWaste)
+data_1987 <- data_1987 %>%
+  mutate(NuclearWaste = ifelse(n3 %in% c(9, 5.31017013119972e-315), NA, n3))
+
+freq(data_1987$NuclearWaste)
 
 # Finding a site in France for radioactive waste ?
 
@@ -65,13 +80,18 @@ data_1985$NuclearWasteLocation <- data_1985$n35
 data_1986 <- data_1986 %>%
   mutate(NuclearWasteLocation = ifelse(data_1986$n35 == 9, NA, data_1986$n35))
 
-freq(data_1986$NuclearWasteLocation)
+data_1987 <- data_1987 %>%
+  mutate(NuclearWasteLocation = ifelse(n35 %in% c(9, 5.30498947741318e-315), NA, n35))
+freq(data_1987$NuclearWasteLocation)
 
 # Radioactive waste can be safely stored ?
 
 data_1985$NuclearWasteSafety <- data_1985$n39
 data_1986 <- data_1986 %>%
   mutate(NuclearWasteSafety = ifelse(data_1986$n39 == 9, NA, data_1986$n39))
+data_1987 <- data_1987 %>%
+  mutate(NuclearWasteSafety = ifelse(n39 %in% c(9, 5.30757980430645e-315), NA, n39))
+freq(data_1987$NuclearWasteSafety)
 
 # Nuclear Support Index (PCA)
 
@@ -336,7 +356,7 @@ freq(data_panel$Cesium)
 ols <- lm(NuclearPlants ~ Women + as.factor(Age) + Diploma + Income + Occupation + HomeOwnership + Savings + FinancialAssets, data = data_1985)
 ols2 <- lm(RetroNuclearPlants ~ Women + as.factor(Age) + Diploma + Income + Occupation + HomeOwnership + Savings + FinancialAssets, data = data_1985)
 
-ols3 <- lm(NuclearSupportIndex ~ Iodine, data = data_panel, subset = Year == 1986)
+ols3 <- lm(NuclearSupportIndex ~ Cesium, data = data_panel, subset = Year == 1986)
 
 stargazer(ols,
   type = "text",
