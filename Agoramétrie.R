@@ -136,15 +136,43 @@ summary(PCA_1986) # 1st component : 42% of total data variance
 
 fviz_pca_var(PCA_1986, col.var = "black")
 
-rows_used85 <- complete.cases(normalization_1986)
+rows_used86 <- complete.cases(normalization_1986)
 data_1986$NuclearSupportIndex <- NA
-data_1986$NuclearSupportIndex[rows_used85] <- PCA_1986$scores[, 1]  # first component
+data_1986$NuclearSupportIndex[rows_used86] <- PCA_1986$scores[, 1]  # first component
 
 data_1986$NuclearSupportIndex <- rescale(data_1986$NuclearSupportIndex, to = c(0, 1))
 
 mean(data_1986$NuclearSupportIndex, na.rm = TRUE)
 
 rm(cronbach_1985, cronbach_1986, normalization_1985, normalization_1986, rows_used85)
+
+# 1987 
+
+cronbach_1987 <- data_1987 %>%
+  dplyr::select(NuclearPlants, RetroNuclearPlants, NuclearExpertise, NuclearWaste, NuclearWasteLocation, NuclearWasteSafety)
+
+cronbach.alpha(cronbach_1987, CI = TRUE, na.rm = TRUE) #0.57
+
+normalization_1987 <- scale(cronbach_1987)
+head(normalization_1987)
+
+PCA_1987 <- princomp(na.omit(normalization_1987))
+PCA_1987$loadings[, 1:2]
+summary(PCA_1987) # 1st component : 39% of total data variance
+
+fviz_pca_var(PCA_1987, col.var = "black")
+
+rows_used87 <- complete.cases(normalization_1987)
+data_1987$NuclearSupportIndex <- NA
+data_1987$NuclearSupportIndex[rows_used87] <- PCA_1987$scores[, 1]  # first component
+
+data_1987$NuclearSupportIndex <- rescale(data_1987$NuclearSupportIndex, to = c(0, 1))
+
+mean(data_1987$NuclearSupportIndex, na.rm = TRUE)
+
+rm(cronbach_1985, cronbach_1986, normalization_1985, normalization_1986, rows_used86,
+   cronbach_1987, normalization_1987, rows_used87)
+
 
 #B) Control variables
 
