@@ -29,7 +29,8 @@ data_1985 <- read_sas("Structures de l'opinion (1977 - 1991)/1985/fr.cdsp.ddi.ag
 data_1986 <- read_sas("Structures de l'opinion (1977 - 1991)/1986/fr.cdsp.ddi.agora1986.sas7bdat")
 data_1987 <- read_sas("Structures de l'opinion (1977 - 1991)/1987/fr.cdsp.ddi.agora1987.sas7bdat")
 data_1987 <- data_1987[-1, ]
-
+data_1988 <- read_sas("Structures de l'opinion (1977 - 1991)/1988/fr.cdsp.ddi.agora1988.sas7bdat")
+data_1988 <- data_1988[-c(1:3), ]
 
 exposure <- read_delim("Cesium 137 et Iode 131 data (IPSN).csv", delim = ";")
 
@@ -44,6 +45,7 @@ data_1985$NuclearPlants <- data_1985$c4
 data_1986$NuclearPlants <- data_1986$c4
 data_1987 <- data_1987 %>%
   mutate(NuclearPlants = ifelse(data_1987$c4 == 5.31017013119972e-315, NA, data_1987$c4))
+data_1988$NuclearPlants <- data_1988$c4
 
 # Building nuclear power plants was a good thing ? (Retrospective appreciation)
 
@@ -52,6 +54,8 @@ data_1986$RetroNuclearPlants <- data_1986$c168
 
 data_1987 <- data_1987 %>%
   mutate(RetroNuclearPlants = ifelse(data_1987$c168 == 5.31017013119972e-315, NA, data_1987$c168))
+
+data_1988$RetroNuclearPlants <- data_1988$c168
 
 # Nuclear experts are very serious people ?
 
@@ -62,8 +66,10 @@ data_1986 <- data_1986 %>%
 data_1987 <- data_1987 %>%
   mutate(NuclearExpertise = ifelse(n19 %in% c(9, 5.31017013119972e-315), NA, n19))
 
-freq(data_1987$NuclearExpertise)
+data_1988 <- data_1988 %>%
+  mutate(NuclearExpertise = ifelse(data_1988$n19 == 9, NA, data_1988$n19))
 
+freq(data_1988$NuclearExpertise)
 
 # Nuclear waste is a serious problem ?
 
@@ -74,7 +80,8 @@ data_1986 <- data_1986 %>%
 data_1987 <- data_1987 %>%
   mutate(NuclearWaste = ifelse(n3 %in% c(9, 5.31017013119972e-315), NA, n3))
 
-freq(data_1987$NuclearWaste)
+data_1988 <- data_1988 %>%
+  mutate(NuclearWaste = ifelse(data_1988$n3 == 9, NA, data_1988$n3))
 
 # Finding a site in France for radioactive waste ?
 
@@ -86,6 +93,9 @@ data_1987 <- data_1987 %>%
   mutate(NuclearWasteLocation = ifelse(n35 %in% c(9, 5.30498947741318e-315), NA, n35))
 freq(data_1987$NuclearWasteLocation)
 
+data_1988 <- data_1988 %>%
+  mutate(NuclearWasteLocation = ifelse(data_1988$n35 == 9, NA, data_1988$n35))
+
 # Radioactive waste can be safely stored ?
 
 data_1985$NuclearWasteSafety <- data_1985$n39
@@ -94,6 +104,8 @@ data_1986 <- data_1986 %>%
 data_1987 <- data_1987 %>%
   mutate(NuclearWasteSafety = ifelse(n39 %in% c(9, 5.30757980430645e-315), NA, n39))
 freq(data_1987$NuclearWasteSafety)
+
+# Missing 1988 
 
 # Nuclear Support Index (PCA)
 
@@ -175,6 +187,30 @@ mean(data_1987$NuclearSupportIndex, na.rm = TRUE)
 rm(cronbach_1985, cronbach_1986, normalization_1985, normalization_1986, rows_used86,
    cronbach_1987, normalization_1987, rows_used87)
 
+# 1988 
+
+cronbach_1988 <- data_1988 %>%
+  dplyr::select(NuclearPlants, RetroNuclearPlants, NuclearExpertise, NuclearWaste, NuclearWasteLocation)
+
+cronbach.alpha(cronbach_1988, CI = TRUE, na.rm = TRUE) #0.71
+
+normalization_1988 <- scale(cronbach_1988)
+head(normalization_1988)
+
+PCA_1988 <- princomp(na.omit(normalization_1988))
+PCA_1988$loadings[, 1:2]
+summary(PCA_1988) # 1st component : 39% of total data variance
+
+fviz_pca_var(PCA_1988, col.var = "black")
+
+rows_used88 <- complete.cases(normalization_1988)
+data_1988$NuclearSupportIndex <- NA
+data_1988$NuclearSupportIndex[rows_used88] <- PCA_1988$scores[, 1]  # first component
+
+data_1988$NuclearSupportIndex <- rescale(data_1988$NuclearSupportIndex, to = c(0, 1))
+
+
+mean(data_1988$NuclearSupportIndex, na.rm = TRUE)
 
 #B) Control variables
 
